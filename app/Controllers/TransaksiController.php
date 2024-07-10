@@ -9,9 +9,9 @@ class TransaksiController extends BaseController
 {
     protected $cart;
     protected $url = "https://api.rajaongkir.com/starter/";
-    protected $apiKey = "5f4b32d92d3cf04562bef715476f2ef0";
+    protected $apiKey = "1cd44574e01e0d8d51ca577aa15b7a2e";
     protected $transaction;
-    protected $transaction_detail;
+    protected $transaction_detal;
 
     function __construct()
     {
@@ -75,7 +75,7 @@ class TransaksiController extends BaseController
         $data['items'] = $this->cart->contents();
         $data['total'] = $this->cart->total();
         $provinsi = $this->rajaongkir('province');
-        $data['provinsi'] = json_decode($provinsi)->rajaongkir->results;
+				$data['provinsi'] = json_decode($provinsi)->rajaongkir->results;
 
         return view('v_checkout', $data);
     }
@@ -128,43 +128,6 @@ class TransaksiController extends BaseController
         return $response;
     }
 
-    public function buy()
-    {
-        if ($this->request->getPost()) {
-            $dataForm = [
-                'username' => $this->request->getPost('username'),
-                'total_harga' => $this->request->getPost('total_harga'),
-                'alamat' => $this->request->getPost('alamat'),
-                'ongkir' => $this->request->getPost('ongkir'),
-                'status' => 0,
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s")
-            ];
-
-            $this->transaction->insert($dataForm);
-
-            $last_insert_id = $this->transaction->getInsertID();
-
-            foreach ($this->cart->contents() as $value) {
-                $dataFormDetail = [
-                    'transaction_id' => $last_insert_id,
-                    'product_id' => $value['id'],
-                    'jumlah' => $value['qty'],
-                    'diskon' => 0,
-                    'subtotal_harga' => $value['qty'] * $value['price'],
-                    'created_at' => date("Y-m-d H:i:s"),
-                    'updated_at' => date("Y-m-d H:i:s")
-                ];
-
-                $this->transaction_detail->insert($dataFormDetail);
-            }
-
-            $this->cart->destroy();
-
-            return redirect()->to(base_url('profile'));
-        }
-    }
-
 
     private function rajaongkir($method, $id_province = null)
     {
@@ -195,5 +158,42 @@ class TransaksiController extends BaseController
         curl_close($curl);
 
         return $response;
+    }
+
+    public function buy()
+    {
+        if ($this->request->getPost()) { 
+            $dataForm = [
+                'username' => $this->request->getPost('username'),
+                'total_harga' => $this->request->getPost('total_harga'),
+                'alamat' => $this->request->getPost('alamat'),
+                'ongkir' => $this->request->getPost('ongkir'),
+                'status' => 0,
+                'created_at' => date("Y-m-d H:i:s"),
+                'updated_at' => date("Y-m-d H:i:s")
+            ];
+    
+            $this->transaction->insert($dataForm);
+    
+            $last_insert_id = $this->transaction->getInsertID();
+    
+            foreach ($this->cart->contents() as $value) {
+                $dataFormDetail = [
+                    'transaction_id' => $last_insert_id,
+                    'product_id' => $value['id'],
+                    'jumlah' => $value['qty'],
+                    'diskon' => 0,
+                    'subtotal_harga' => $value['qty'] * $value['price'],
+                    'created_at' => date("Y-m-d H:i:s"),
+                    'updated_at' => date("Y-m-d H:i:s")
+                ];
+    
+                $this->transaction_detail->insert($dataFormDetail);
+            }
+    
+            $this->cart->destroy();
+     
+            return redirect()->to(base_url('profile'));
+        }
     }
 }

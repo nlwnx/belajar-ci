@@ -148,7 +148,7 @@
                         var text = results[i]["description"] + "(" + results[i]["service"] + ")";
                         $("#service").append($('<option>', {
                             value: results[i]["cost"][0]["value"],
-                            text: text
+                            text: text 
                         }));
                     }
                     hitungTotal();
