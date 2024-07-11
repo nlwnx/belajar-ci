@@ -11,7 +11,7 @@ class TransaksiController extends BaseController
     protected $url = "https://api.rajaongkir.com/starter/";
     protected $apiKey = "1cd44574e01e0d8d51ca577aa15b7a2e";
     protected $transaction;
-    protected $transaction_detal;
+    protected $transaction_detail;
 
     function __construct()
     {
