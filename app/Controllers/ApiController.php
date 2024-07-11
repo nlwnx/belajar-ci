@@ -10,11 +10,17 @@ use App\Models\TransactionModel;
 use App\Models\TransactionDetailModel;
 class ApiController extends ResourceController
 {
-    /**
-     * Return an array of resource objects, themselves in array format.
-     *
-     * @return ResponseInterface
-     */
+    protected $apiKey = "1cd44574e01e0d8d51ca577aa15b7a2e";
+    protected $user;
+    protected $transaction;
+    protected $transaction_detail;
+
+     function __construct()
+  {
+        $this->user = new UserModel();
+        $this->transaction = new TransactionModel();
+        $this->transaction_detail = new TransactionDetailModel();
+  }
     public function index()
     {
         //
