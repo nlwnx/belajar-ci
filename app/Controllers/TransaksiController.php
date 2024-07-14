@@ -207,4 +207,49 @@ public function checkout()
             return redirect()->to(base_url('profile'));
         }
     }
+
+    public function transaksi()
+    {
+        $data['transactions'] = $this->transaction->findAll();
+        return view('v_transaksi', $data);
+    }
+
+   public function updateStatus()
+{
+    $transactionId = $this->request->getPost('id');
+    $status = $this->request->getPost('status');
+
+    if ($transactionId && ($status === '0' || $status === '1')) {
+        $this->transaction->update($transactionId, ['status' => $status]);
+        session()->setFlashData('success', 'Data Berhasil Diubah');
+    } else {
+        session()->setFlashData('failed', 'Invalid request');
+    }
+
+    return redirect()->to(base_url('transaksi'));
+}
+
+public function downloadTransaksi()
+    {
+        $transaction = $this->transaction->findAll();
+
+        $html = view('v_transaksiPDF', ['transaction' => $transaction]);
+
+        $filename = date('y-m-d-H-i-s') . '-transaksi';
+
+        // instantiate and use the dompdf class
+        $dompdf = new Dompdf();
+
+        // load HTML content
+        $dompdf->loadHtml($html);
+
+        // (optional) setup the paper size and orientation
+        $dompdf->setPaper('A4', 'potrait');
+
+        // render html as PDF
+        $dompdf->render();
+
+        // output the generated pdf
+        $dompdf->stream($filename);
+    }
 }
