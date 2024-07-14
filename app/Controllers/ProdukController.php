@@ -2,8 +2,13 @@
 
 namespace App\Controllers;
 
+namespace App\Controllers;
+
 use App\Models\ProductModel;
 use Dompdf\Dompdf;
+
+use App\Controllers\BaseController;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class ProdukController extends BaseController
 {
@@ -14,6 +19,7 @@ class ProdukController extends BaseController
     {
         $this->product = new ProductModel();
     }
+
 
     public function index()
     {
@@ -34,6 +40,16 @@ class ProdukController extends BaseController
             'created_at' => date("Y-m-d H:i:s")
         ];
 
+                // Validation rules
+        $rules = [
+            'nama' => 'required|min_length[6]',
+            'harga' => 'required|numeric',
+            'jumlah' => 'required|numeric'
+        ];  
+        
+        // Validate the input
+        if ($this->validate($rules)) {
+
         if ($dataFoto->isValid()) {
             $fileName = $dataFoto->getRandomName();
             $dataForm['foto'] = $fileName;
@@ -43,6 +59,11 @@ class ProdukController extends BaseController
         $this->product->insert($dataForm);
 
         return redirect('produk')->with('success', 'Data Berhasil Ditambah');
+        } else {
+                    // Validation failed, show errors
+                session()->setFlashdata('failed', $this->validator->listErrors());
+                return redirect()->back();
+            }
     }
 
     public function edit($id)
@@ -56,23 +77,37 @@ class ProdukController extends BaseController
             'updated_at' => date("Y-m-d H:i:s")
         ];
 
-        if ($this->request->getPost('check') == 1) {
-            if ($dataProduk['foto'] != '' and file_exists("img/" . $dataProduk['foto'] . "")) {
-                unlink("img/" . $dataProduk['foto']);
+        // Validation rules
+        $rules = [
+            'nama' => 'required|min_length[6]',
+            'harga' => 'required|numeric',
+            'jumlah' => 'required|numeric'
+        ];  
+
+        // Validate the input
+        if ($this->validate($rules)) {
+            if ($this->request->getPost('check') == 1) {
+                if ($dataProduk['foto'] != '' and file_exists("img/" . $dataProduk['foto'] . "")) {
+                    unlink("img/" . $dataProduk['foto']);
+                }
+
+                $dataFoto = $this->request->getFile('foto');
+
+                if ($dataFoto->isValid()) {
+                    $fileName = $dataFoto->getRandomName();
+                    $dataFoto->move('img/', $fileName);
+                    $dataForm['foto'] = $fileName;
+                }
             }
 
-            $dataFoto = $this->request->getFile('foto');
+            $this->product->update($id, $dataForm);
 
-            if ($dataFoto->isValid()) {
-                $fileName = $dataFoto->getRandomName();
-                $dataFoto->move('img/', $fileName);
-                $dataForm['foto'] = $fileName;
+            return redirect('produk')->with('success', 'Data Berhasil Diubah');
+        } else {
+                    // Validation failed, show errors
+                session()->setFlashdata('failed', $this->validator->listErrors());
+                return redirect()->back();
             }
-        }
-
-        $this->product->update($id, $dataForm);
-
-        return redirect('produk')->with('success', 'Data Berhasil Diubah');
     }
 
     public function delete($id)

@@ -2,8 +2,12 @@
 
 namespace App\Controllers;
 
+use App\Controllers\BaseController;
 use App\Models\TransactionModel;
 use App\Models\TransactionDetailModel;
+use CodeIgniter\HTTP\ResponseInterface;
+
+use Dompdf\Dompdf;
 
 class TransaksiController extends BaseController
 {
@@ -70,15 +74,16 @@ class TransaksiController extends BaseController
         return redirect()->to(base_url('keranjang'));
     }
 
-    public function checkout()
+public function checkout()
     {
         $data['items'] = $this->cart->contents();
         $data['total'] = $this->cart->total();
         $provinsi = $this->rajaongkir('province');
-				$data['provinsi'] = json_decode($provinsi)->rajaongkir->results;
+		$data['provinsi'] = json_decode($provinsi)->rajaongkir->results;
 
         return view('v_checkout', $data);
     }
+
 
     public function getCity()
     {
@@ -157,12 +162,18 @@ class TransaksiController extends BaseController
 
         curl_close($curl);
 
+        if ($err) {
+            log_message('error', 'Curl Error: ' . $err);
+            return null;
+        }
+
         return $response;
     }
 
+
     public function buy()
     {
-        if ($this->request->getPost()) { 
+        if ($this->request->getPost()) {
             $dataForm = [
                 'username' => $this->request->getPost('username'),
                 'total_harga' => $this->request->getPost('total_harga'),
@@ -172,11 +183,11 @@ class TransaksiController extends BaseController
                 'created_at' => date("Y-m-d H:i:s"),
                 'updated_at' => date("Y-m-d H:i:s")
             ];
-    
+
             $this->transaction->insert($dataForm);
-    
+
             $last_insert_id = $this->transaction->getInsertID();
-    
+
             foreach ($this->cart->contents() as $value) {
                 $dataFormDetail = [
                     'transaction_id' => $last_insert_id,
@@ -187,12 +198,12 @@ class TransaksiController extends BaseController
                     'created_at' => date("Y-m-d H:i:s"),
                     'updated_at' => date("Y-m-d H:i:s")
                 ];
-    
+
                 $this->transaction_detail->insert($dataFormDetail);
             }
-    
+
             $this->cart->destroy();
-     
+
             return redirect()->to(base_url('profile'));
         }
     }

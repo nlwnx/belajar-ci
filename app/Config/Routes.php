@@ -42,4 +42,16 @@ $routes->get('profile', 'Home::profile', ['filter' => 'auth']);
 
 $routes->group('api', function ($routes) {
     $routes->post('monthly', 'ApiController::monthly');
+    $routes->post('yearly', 'ApiController::yearly');
+});
+
+// $routes->group('api', function ($routes) {
+//     $routes->post('yearly', 'ApiController::yearly');
+// });
+    
+    // transaksi
+$routes->group('transaksi', ['filter' => 'auth'], function ($routes) {
+    $routes->get('', 'TransaksiController::transaksi');
+    $routes->post('updateStatus', 'TransaksiController::updateStatus');
+    $routes->get('downloadTransaksi', 'TransaksiController::downloadTransaksi');
 });
